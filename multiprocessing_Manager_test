@@ -1,0 +1,35 @@
+from multiprocessing import Process, Manager, cpu_count
+import random
+import uuid
+import os
+import time
+
+uuid.uuid1()
+
+
+def f(d, l):
+    d[1] = '1'
+    d['2'] = 2
+    # time.sleep(random.uniform(1, 10))
+    for i in range(100000):
+        l.append(str(os.getpid()))  # 追加一个1
+        d[str(uuid.uuid1())] = str(os.getpid())
+        print('--pid is:', os.getpid(), '--ppid is:', os.getppid(), '--l is:', l, '\n')
+    # print(d)
+
+
+if __name__ == '__main__':
+    d = Manager().dict()  # 生成一个字典，可在多个进程间共享和传递
+    l = Manager().list(range(5))  # 列表
+
+    p_list = []  # 进程列表
+    for i in range(10):
+        p = Process(target=f, args=(d, l))  # 循环10次每次创建一个进程
+        p.start()
+        p_list.append(p)  # 加入进程列表里
+
+    for res in p_list:  # 等所有进程结束
+        res.join()
+
+    print(d)
+    print(l)
